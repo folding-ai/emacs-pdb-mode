@@ -37,7 +37,7 @@
 ;; line to your .emacs (or get your sysadmin to
 ;; add it to the site-start.el) and visit a pdb file.
 ;; (load-file "/{path-to}/pdb-mode.el")
-;; ;; Need (setq pdb-rasmol-name "\"c:/Program Files/Rasmol/rw32b2a.exe\"")
+;; ;; Need (setq pdb-pymol-name "\"c:/Program Files/Pymol/rw32b2a.exe\"")
 ;; ;; or something similar for windows
 ;; (setq auto-mode-alist
 ;;     (cons (cons "pdb$" 'pdb-mode) 
@@ -199,18 +199,18 @@
 (eval-when-compile
   (defvar pdb-start-user-region nil "PDB Mode: Used by some functions")
   (defvar pdb-end-user-region nil "PDB Mode: Used by some functions")
-  (defvar pdb-rasmol-name "rasmol" "PDB Mode: Full path to rasmol executable (only necessary if typing rasmol in a shell doesn't work. In Windows \(setq pdb-rasmol-name \"c:/Program Files/Rasmol/rw32b2a.exe\"\) or something similar to .emacs for windows")
-  (defvar pdb-rasmol-filestamp nil "PDB Mode: Temporary filename for rasmol display. Of the form (concat (getenv \"PWD\") \"/#TMP-emacs-rasmol\" (number-to-string (elt (current-time) 1)) (number-to-string (emacs-pid)) \"#\")))")
+  (defvar pdb-pymol-name "pymol" "PDB Mode: Full path to pymol executable (only necessary if typing pymol in a shell doesn't work. In Windows \(setq pdb-pymol-name \"c:/Program Files/Pymol/rw32b2a.exe\"\) or something similar to .emacs for windows")
+  (defvar pdb-pymol-filestamp nil "PDB Mode: Temporary filename for pymol display. Of the form (concat (getenv \"PWD\") \"/#TMP-emacs-pymol\" (number-to-string (elt (current-time) 1)) (number-to-string (emacs-pid)) \"#\")))")
   (defvar pdb-amino-lookup nil "PDB Mode: Lookup table to convert single-letter to three-letter amino acid codes")
   (defvar pdb-record-lookup nil "PDB Mode: Lookup table to access side-chain PDB coordinates for amino acids from their three-letter code.")
   (defvar pdb-mode-syntax-table nil "Syntax table in use in set file mode buffers.")
   (defvar pdb-font-lock-keywords nil "Table of set file font lock keywords."))
 
-;; Default binding for pdb-rasmol-name
-;; Need to add (setq pdb-rasmol-name "\"c:/Program Files/Rasmol/rw32b2a.exe\"")
+;; Default binding for pdb-pymol-name
+;; Need to add (setq pdb-pymol-name "\"c:/Program Files/Pymol/rw32b2a.exe\"")
 ;; or something similar to .emacs for windows
-(unless (boundp 'pdb-rasmol-name)
-  (setq pdb-rasmol-name "pymol"))
+(unless (boundp 'pdb-pymol-name)
+  (setq pdb-pymol-name "pymol"))
 
 ;; Some necessary data
 (setq pdb-amino-lookup '(("A" . "ALA") ("C" . "CYS") ("D" . "ASP") ("E" . "GLU") ("F" . "PHE") ("G" . "GLY") ("H" . "HIS") ("I" . "ILE") ("K" . "LYS") ("L" . "LEU") ("M" . "MET") ("N" . "ASN") ("P" . "PRO") ("Q" . "GLN") ("R" . "ARG") ("S" . "SER") ("T" . "THR") ("V" . "VAL") ("W" . "TRP") ("Y" . "TYR") ("dA" . "A  ") ("dG" . "G  ") ("dT" . "T  ") ("dC" . "C  ")))
@@ -1533,24 +1533,24 @@ ATOM     11  O3* A   A   1       0.272  -1.450  -2.624  1.00 20.00\n"))
 (defun pdb-view ( b e )
   "PDB mode: Display selected atoms in pymol"
   (interactive "r" )
-  (let ((procname (get-buffer-process "*RASMOL*")))
-    ;; Terminate previous Rasmol buffer, process etc
+  (let ((procname (get-buffer-process "*PYMOL*")))
+    ;; Terminate previous Pymol buffer, process etc
     (if procname
 	(progn
 	  (set-process-sentinel procname nil)
 	  (pdb-view-sentinel procname nil))))
   (pdb-sub-defineregion b e)
   (pdb-sub-markregion)
-  (setq pdb-rasmol-filestamp (concat (getenv "PWD") "/tmp/#tmp" (number-to-string (elt (current-time) 1)) (number-to-string (emacs-pid)) "#.pdb"))
+  (setq pdb-pymol-filestamp (concat (getenv "PWD") "/tmp/#tmp" (number-to-string (elt (current-time) 1)) (number-to-string (emacs-pid)) "#.pdb"))
   (let ((procname)
-	(bufname "*RASMOL*"))
-    (write-region pdb-start-user-region pdb-end-user-region pdb-rasmol-filestamp)
+	(bufname "*PYMOL*"))
+    (write-region pdb-start-user-region pdb-end-user-region pdb-pymol-filestamp)
     ;; shell-command in Xemacs returns a process, 
     ;; but in GNU emacs it returns a symbol.
     ;; I want a process, so I have to use add an extra line for Emacs.
     ;; shell-command in Xemacs fails to put the process output in a buffer
     ;; named as the final argument, so an extra line is needed.
-    (setq procname (shell-command (concat pdb-rasmol-name " " pdb-rasmol-filestamp "&") bufname))
+    (setq procname (shell-command (concat pdb-pymol-name " " pdb-pymol-filestamp "&") bufname))
     (cond ((string-match "XEmacs" (emacs-version))
 	   (rename-buffer bufname))
 	  ((string-match "GNU Emacs" (emacs-version))
@@ -1564,10 +1564,10 @@ ATOM     11  O3* A   A   1       0.272  -1.450  -2.624  1.00 20.00\n"))
 (defun pdb-view-sentinel (process string)
   "PDB mode: Process the results from the view connection."
   (let ((buffer (process-buffer process)))
-    (delete-file pdb-rasmol-filestamp)
+    (delete-file pdb-pymol-filestamp)
     (delete-windows-on buffer)
     (kill-buffer buffer))
-  (message (concat "RASMOL session " string)))
+  (message (concat "PYMOL session " string)))
 
 (message "rna-clean loaded...")
 
