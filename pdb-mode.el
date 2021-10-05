@@ -1530,8 +1530,8 @@ ATOM     11  O3* A   A   1       0.272  -1.450  -2.624  1.00 20.00\n"))
 	   (set-process-sentinel tcp-connection `pdb-ebi-sentinel)))
     (message (concat "PDB mode: Downloading " (buffer-name buf) " from " host " . Be patient ..."))))
 
-(defun pdb-view  ( b e )
-  "PDB mode: Display selected atoms in rasmol"
+(defun pdb-view ( b e )
+  "PDB mode: Display selected atoms in pymol"
   (interactive "r" )
   (let ((procname (get-buffer-process "*RASMOL*")))
     ;; Terminate previous Rasmol buffer, process etc
@@ -1541,7 +1541,7 @@ ATOM     11  O3* A   A   1       0.272  -1.450  -2.624  1.00 20.00\n"))
 	  (pdb-view-sentinel procname nil))))
   (pdb-sub-defineregion b e)
   (pdb-sub-markregion)
-  (setq pdb-rasmol-filestamp (concat (getenv "PWD") "/tmp/#tmp" (number-to-string (elt (current-time) 1)) (number-to-string (emacs-pid)) "#"))
+  (setq pdb-rasmol-filestamp (concat (getenv "PWD") "/tmp/#tmp" (number-to-string (elt (current-time) 1)) (number-to-string (emacs-pid)) "#.pdb"))
   (let ((procname)
 	(bufname "*RASMOL*"))
     (write-region pdb-start-user-region pdb-end-user-region pdb-rasmol-filestamp)
